@@ -1,7 +1,7 @@
 /**
  * pushbullet-tasker.js
  *
- * Version: 1.0.1
+ * Version: 1.0.2
  * Date: 2016-07-23
  *
  * © 2016 Cristian Moncho Ivorra
