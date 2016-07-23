@@ -36,7 +36,7 @@ The push paramaters must be set **before** calling the JS library. They can be
 set in two interchangeable ways: locally (e.g., `pb_token`) and/or globally
 (e.g., `PB_TOKEN`).
 
--  `PB_TOKEN`: **(required)** Must contain the requestd API Key.
+-  `PB_TOKEN`: **(required)** Must contain your Pushbullet API Key.
 
 -  `PB_DEBUG`: Enable debug (shows toast messages).
 
@@ -65,8 +65,8 @@ set in two interchangeable ways: locally (e.g., `pb_token`) and/or globally
 > library will try to send the push automatically
 
 You can call the push methods manually in a JavaScriptlet. The parameters are
-similar but they drop the "PB_" prefix. Not given parameters will be readed
-from the environment, as usual.
+similar but in lowercase and droppping the `PB_` prefix. Not given parameters
+will be readed from the environment, as usual.
 
 ```javascript
 try {

@@ -1,41 +1,40 @@
 /**
- * @license
  * pushbullet-tasker.js
  *
- * Versión: 1.0.0
- * Date: 2016-07-22
+ * Version: 1.0.1
+ * Date: 2016-07-23
  *
  * © 2016 Cristian Moncho Ivorra
  * @license https://www.gnu.org/licenses/lgpl-3.0.txt
  */
 
-if ( typeof tk === 'undefined' ) {
+if ( typeof tk === "undefined" ) {
     // Enable testing from web browsers
     var tk = {
-        local: function () {},
-        global: function () {},
-        flashLong: console.log,
+        local: function () { return; },
+        global: function () { return; },
+        flashLong: (window.console || {}).log || function () { return; }
     };
 }
 
 var PB = (function(tk, window, undefined) {
-    'use strict';
+    "use strict";
 
     var API = {},
-        BASE_URL = 'https://api.pushbullet.com/v2/',
-        PUSH_URL = BASE_URL + 'pushes',
-        UPLOAD_REQUEST_URL = BASE_URL + 'upload-request';
+        BASE_URL = "https://api.pushbullet.com/v2/",
+        PUSH_URL = BASE_URL + "pushes",
+        UPLOAD_REQUEST_URL = BASE_URL + "upload-request";
 
     var HttpStatus = {
         OK: 200,
         NO_CONTENT: 204,
         BAD_REQUEST: 400,
         UNAUTHORIZED: 401,
-        NOT_FOUND: 404,
+        NOT_FOUND: 404
     };
 
-    API.debug = getenv('pb_debug', false);
-    API.token = getenv('pb_token', null);
+    API.debug = getEnv("pb_debug", false);
+    API.token = getEnv("pb_token", null);
 
     /**
      * Sends a Push Request to Pushbullet.
@@ -46,8 +45,8 @@ var PB = (function(tk, window, undefined) {
      * @throws {Error} The requests has failed.
      */
     function push(type, data) {
-        var req = buildRequest('POST', PUSH_URL, {
-            'Access-Token': API.token,
+        var req = buildRequest("POST", PUSH_URL, {
+            "Access-Token": API.token
         });
 
         data.type = type;
@@ -58,7 +57,7 @@ var PB = (function(tk, window, undefined) {
         }
 
         if ( req.status !== HttpStatus.OK ) {
-            throw new window.Error('Unable to push data: ' + req.status);
+            throw new window.Error("Unable to push data: " + req.status);
         }
 
         return req.responseText;
@@ -73,13 +72,13 @@ var PB = (function(tk, window, undefined) {
      * @throws {Error} The requests has failed.
      */
     function uploadRequest(file_name, file_type) {
-        var req = buildRequest('POST', UPLOAD_REQUEST_URL, {
-            'Access-Token': API.token,
+        var req = buildRequest("POST", UPLOAD_REQUEST_URL, {
+            "Access-Token": API.token
         });
 
         req.send(buildFormData({
             file_name: file_name,
-            file_type: file_type,
+            file_type: file_type
         }));
 
         if ( API.debug ) {
@@ -87,7 +86,7 @@ var PB = (function(tk, window, undefined) {
         }
 
         if ( req.status !== HttpStatus.OK ) {
-            throw new window.Error('Unable to request upload URL: ' + req.status);
+            throw new window.Error("Unable to request upload URL: " + req.status);
         }
 
         return JSON.parse(req.responseText);
@@ -102,8 +101,8 @@ var PB = (function(tk, window, undefined) {
      *          XMLHttpRequest/Using_XMLHttpRequest#Handling_binary_data}
      */
     function readFileAsBlob(path) {
-        var req = buildRequest('GET', path);
-        req.overrideMimeType('text/plain; charset=x-user-defined');
+        var req = buildRequest("GET", path);
+        req.overrideMimeType("text/plain; charset=x-user-defined");
         req.send();
 
         var res = req.responseText;
@@ -120,21 +119,21 @@ var PB = (function(tk, window, undefined) {
      * Upload file to the uploadRequest's given "upload_url".
      *
      * @param {String} file_name - The name of the file you want to upload.
-     * @param {String} file_type - The MIME type of the file. 
+     * @param {String} file_type - The MIME type of the file.
      * @param {String} file_path - The file absolute path.
      * @returns {String} The public URL pointing to the uploaded file.
      * @throws {Error} The requests has failed.
      */
     function uploadFile(file_name, file_type, file_path) {
         var upload = uploadRequest(file_name, file_type);
-        var req = buildRequest('POST', upload.upload_url);
+        var req = buildRequest("POST", upload.upload_url);
 
         req.send(buildFormData({
-            file: readFileAsBlob(file_path),
+            file: readFileAsBlob(file_path)
         }));
 
         if ( req.status !== HttpStatus.NO_CONTENT ) {
-            throw new window.Error('Unable to upload file: ' + req.status);
+            throw new window.Error("Unable to upload file: " + req.status);
         }
 
         return upload.file_url;
@@ -187,17 +186,19 @@ var PB = (function(tk, window, undefined) {
      * @returns Requested variable value, or "defVal" if not defined.
      * @throws {Error} Variable not defined and no default value given.
      */
-    function getenv(varName, defVal) {
+    function getEnv(varName, defVal) {
         var val;
 
         // Stops at the first non-undefined value
         [window[varName], tk.local(varName.toLowerCase()),
          tk.global(varName.toUpperCase()), defVal].some(function (el, i) {
-            return typeof (val = el) !== 'undefined';
+            // FIX: When loading library from an external resource, some
+            // values are set as `"undefined"` (string) and not `undefined`.
+            return el !== "undefined" && typeof (val = el) !== "undefined";
         });
 
-        if ( typeof val === 'undefined' ) {
-            throw new window.Error('Undefined variable "' + varName + '"!');
+        if ( typeof val === "undefined" ) {
+            throw new window.Error("Undefined variable \"" + varName + "\"!");
         }
 
         return val;
@@ -211,9 +212,9 @@ var PB = (function(tk, window, undefined) {
      */
     API.pushNote = function (options) {
         options = options || {};
-        return push('note', {
-            title: options.title || getenv('pb_title', ''),
-            body: options.body || getenv('pb_body', ''),
+        return push("note", {
+            title: options.title || getEnv("pb_title", ""),
+            body: options.body || getEnv("pb_body", "")
         });
     };
 
@@ -225,10 +226,10 @@ var PB = (function(tk, window, undefined) {
      */
     API.pushLink = function (options) {
         options = options || {};
-        return push('link', {
-            title: options.title || getenv('pb_title', ''),
-            body: options.body || getenv('pb_body', ''),
-            url: options.url || getenv('pb_url'),
+        return push("link", {
+            title: options.title || getEnv("pb_title", ""),
+            body: options.body || getEnv("pb_body", ""),
+            url: options.url || getEnv("pb_url")
         });
     };
 
@@ -240,27 +241,27 @@ var PB = (function(tk, window, undefined) {
      */
     API.pushFile = function (options) {
         options = options || {};
-        var file_name = options.file_name || getenv('pb_file_name');
-        var file_path = options.file_path || getenv('pb_file_path');
-        var file_type = options.file_type || getenv('pb_file_type');
-        return push('file', {
-            title: options.title || getenv('pb_title', ''),
-            body: options.body || getenv('pb_body', ''),
+        var file_name = options.file_name || getEnv("pb_file_name");
+        var file_path = options.file_path || getEnv("pb_file_path");
+        var file_type = options.file_type || getEnv("pb_file_type");
+        return push("file", {
+            title: options.title || getEnv("pb_title", ""),
+            body: options.body || getEnv("pb_body", ""),
             file_name: file_name,
             file_type: file_type,
-            file_url: uploadFile(file_name, file_type, file_path),
+            file_url: uploadFile(file_name, file_type, file_path)
         });
     };
 
     // Auto-push
-    var type = getenv('pb_type', null);
+    var type = getEnv("pb_type", null);
     if ( type ) {
         ({
             note: API.pushNote,
             link: API.pushLink,
             file: API.pushFile
         }[type] || function unknownType() {
-            throw Error("Unknown type: '" + type + "'!");
+            throw Error("Unknown type: \"" + type + "\"!");
         })();
     }
 
