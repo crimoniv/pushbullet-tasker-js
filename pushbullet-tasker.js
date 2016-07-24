@@ -1,8 +1,8 @@
 /**
  * pushbullet-tasker.js
  *
- * Version: 1.0.2
- * Date: 2016-07-23
+ * Version: 1.0.3
+ * Date: 2016-07-24
  *
  * © 2016 Cristian Moncho Ivorra
  * @license https://www.gnu.org/licenses/lgpl-3.0.txt
@@ -33,35 +33,8 @@ var PB = (function(tk, window, undefined) {
         NOT_FOUND: 404
     };
 
-    API.debug = getEnv("pb_debug", false);
-    API.token = getEnv("pb_token", null);
-
-    /**
-     * Sends a Push Request to Pushbullet.
-     *
-     * @param {String} type - Type of the push, one of "note", "file", "link".
-     * @param {Object} data - Push parameters.
-     * @returns {String} The request's response.
-     * @throws {Error} The requests has failed.
-     */
-    function push(type, data) {
-        var req = buildRequest("POST", PUSH_URL, {
-            "Access-Token": API.token
-        });
-
-        data.type = type;
-        req.send(buildFormData(data));
-
-        if ( API.debug ) {
-            tk.flashLong(req.responseText);
-        }
-
-        if ( req.status !== HttpStatus.OK ) {
-            throw new window.Error("Unable to push data: " + req.status);
-        }
-
-        return req.responseText;
-    }
+    API.debug = getEnv("debug", false);
+    API.token = getEnv("token", null);
 
     /**
      * Request authorization to upload a file.
@@ -188,6 +161,7 @@ var PB = (function(tk, window, undefined) {
      */
     function getEnv(varName, defVal) {
         var val;
+        varName = "pb_" + varName;
 
         // Stops at the first non-undefined value
         [window[varName], tk.local(varName.toLowerCase()),
@@ -205,17 +179,72 @@ var PB = (function(tk, window, undefined) {
     }
 
     /**
+     * Sends a Push Request to Pushbullet.
+     *
+     * @param {String} type - Type of the push, one of "note", "file", "link".
+     * @param {Object} data - Push parameters.
+     * @returns {String} The request's response.
+     * @throws {Error} The requests has failed.
+     */
+    function push(type, data) {
+        var req = buildRequest("POST", PUSH_URL, {
+            "Access-Token": API.token
+        });
+
+        data.type = type;
+        req.send(buildFormData(data));
+
+        if ( API.debug ) {
+            tk.flashLong(req.responseText);
+        }
+
+        if ( req.status !== HttpStatus.OK ) {
+            throw new window.Error("Unable to push data: " + req.status);
+        }
+
+        return req.responseText;
+    }
+
+    /**
+     * Generates an Object with all the fields that are common among
+     * every push type.
+     *
+     * @param {Object} options - Raw push parameters.
+     * @returns {Object} Minimal (and safe) push parameters.
+     * @throws {Error} "device_iden" and "email" are mutually exclusive.
+     */
+    function getCommonFields(options) {
+        var fields = {};
+
+        // Get common fields
+        fields.title = options.title || getEnv("title", "");
+        fields.body = options.body || getEnv("body", "");
+        
+        // Get push target (if applicable)
+        var device_iden = options.device_iden || getEnv("device_iden", "");
+        var email = options.email || getEnv("email", "");
+
+        if ( device_iden && email ) {
+            throw new window.Error(
+                "'device_iden' and 'email' are mutually exclusive.");
+        } else if ( device_iden ) {
+            fields.device_iden = device_iden;
+        } else if ( email ) {
+            fields.email = email;
+        }
+
+        return fields;
+    }
+
+    /**
      * Push Note.
      *
      * @param {Object} options - Set/override the Note parameters.
      * @returns Request's response.
      */
     API.pushNote = function (options) {
-        options = options || {};
-        return push("note", {
-            title: options.title || getEnv("pb_title", ""),
-            body: options.body || getEnv("pb_body", "")
-        });
+        var fields = getCommonFields(options);
+        return push("note", fields);
     };
 
     /**
@@ -225,12 +254,9 @@ var PB = (function(tk, window, undefined) {
      * @returns Request's response.
      */
     API.pushLink = function (options) {
-        options = options || {};
-        return push("link", {
-            title: options.title || getEnv("pb_title", ""),
-            body: options.body || getEnv("pb_body", ""),
-            url: options.url || getEnv("pb_url")
-        });
+        var fields = getCommonFields(options);
+        fields.url = options.url || getEnv("url");
+        return push("link", fields);
     };
 
     /**
@@ -240,21 +266,17 @@ var PB = (function(tk, window, undefined) {
      * @returns Request's response.
      */
     API.pushFile = function (options) {
-        options = options || {};
-        var file_name = options.file_name || getEnv("pb_file_name");
-        var file_path = options.file_path || getEnv("pb_file_path");
-        var file_type = options.file_type || getEnv("pb_file_type");
-        return push("file", {
-            title: options.title || getEnv("pb_title", ""),
-            body: options.body || getEnv("pb_body", ""),
-            file_name: file_name,
-            file_type: file_type,
-            file_url: uploadFile(file_name, file_type, file_path)
-        });
+        var fields = getCommonFields(options);
+        var file_path = options.file_path || getEnv("file_path");
+        fields.file_name = options.file_name || getEnv("file_name");
+        fields.file_type = options.file_type || getEnv("file_type");
+        fields.file_url = uploadFile(
+            fields.file_name, fields.file_type, file_path);
+        return push("file", fields);
     };
 
     // Auto-push
-    var type = getEnv("pb_type", null);
+    var type = getEnv("type", null);
     if ( type ) {
         ({
             note: API.pushNote,

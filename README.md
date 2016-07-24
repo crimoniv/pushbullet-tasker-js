@@ -2,7 +2,7 @@
 
 Send notes, links and/or local files to Pushbullet from Tasker.
 
-## Requirenments
+## Requirements
 
 -  A [Pushbullet](https://www.pushbullet.com/) account (a free one should
    suffice).
@@ -14,7 +14,7 @@ Send notes, links and/or local files to Pushbullet from Tasker.
 1. Get a Pushbullet API key from [Settings > Account > Access Tokens >
    Create Access Token][pb-settings].
 
-2. In Tasker, create and asign the API key to the `pb_token` variable (see:
+2. In Tasker, create and assign the API key to the `pb_token` variable (see:
    [Parameters](#parameters)).
 
 3. Load the library (locally or externally):
@@ -26,13 +26,13 @@ Send notes, links and/or local files to Pushbullet from Tasker.
     - **External**: Create a new JavaScriptlet action with the following
       parameters:
 
-        - **Code**: `// pushbullet-tasker-js/1.0.2`
+        - **Code**: `// pushbullet-tasker-js/1.0.3`
 
-        - **Libraries**: `https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.2/pushbullet-tasker.min.js`
+        - **Libraries**: `https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.3/pushbullet-tasker.min.js`
 
 ## Parameters
 
-The push paramaters must be set **before** calling the JS library. They can be
+The push parameters must be set **before** calling the JS library. They can be
 set in two interchangeable ways: locally (e.g., `pb_token`) and/or globally
 (e.g., `PB_TOKEN`).
 
@@ -47,6 +47,12 @@ set in two interchangeable ways: locally (e.g., `pb_token`) and/or globally
 
 -  `PB_BODY`: The push body (e.g., `My push content.`).
 
+-  `PB_DEVICE_IDEN`\*: Device ID of the target device, if sending to a single
+   device. (see: [How to get the Device ID](#how-to-get-the-device-id)).
+
+-  `PB_EMAIL`\*: Email address to send the push to. If there is a pushbullet user
+   with this address, they get a push, otherwise they get an email.
+
 -  `PB_URL`: The URL to send (e.g., `https://www.example.com`). Used for `link`
    pushes.
 
@@ -59,14 +65,23 @@ set in two interchangeable ways: locally (e.g., `pb_token`) and/or globally
 -  `PB_FILE_PATH`: Absolute path where the file is stored (e.g.,
    `/sdcard/DCIM/Tasker/cat.jpg`). Used for `file` pushes.
 
-## Manual/Multiple pushes
+_\* Both parameters, `PB_DEVICE_IDEN` and `PB_EMAIL`, are mutually exclusive.
+If they are omitted, the push will be sent to all devices._
 
-> **NOTE**: Ensure that the paremeter `PB_TYPE` is not set, otherwise the
+## How to get the Device ID
+
+- Go to <https://www.pushbullet.com/#devices>.
+- Click the target device.
+- Inspect the URL: `https://www.pushbullet.com/#devices/<your-device-iden>`
+
+## Manual/multiple pushes
+
+> **NOTE**: Ensure that the parameter `PB_TYPE` is not set, otherwise the
 > library will try to send the push automatically
 
 You can call the push methods manually in a JavaScriptlet. The parameters are
-similar but in lowercase and droppping the `PB_` prefix. Not given parameters
-will be readed from the environment, as usual.
+similar but in lowercase and dropping the `PB_` prefix. Not given parameters
+will be read from the environment, as usual.
 
 ```javascript
 try {
@@ -97,7 +112,7 @@ try {
 Push Note (ext. lib.) (1)
 A1: Variable Set [ Name:%pb_token To:<insert-your-token> Do Maths:Off Append:Off ]
 A2: Variable Set [ Name:%pb_type To:note Do Maths:Off Append:Off ]
-A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.2/pushbullet-tasker.min.js Auto Exit:On Timeout (Seconds):45 ]
+A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.3/pushbullet-tasker.min.js Auto Exit:On Timeout (Seconds):45 ]
 ```
 
 ### Take and push a photo
@@ -115,12 +130,19 @@ A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker
 
 ## Changelog
 
+### 1.0.3 (2016-07-24)
+
+- Simplified API parameters object building.
+
+- Added the ability to select the push target with the parameters
+  `PB_DEVICE_IDEN` and `PB_EMAIL`.
+
 ### 1.0.2 (2016-07-23)
 
 - JSLint improvements.
 
-- Tasker variables readed with tk.local/tk.global could potentially be readed
-  as `"undefined"` (string) instead of `undefined` (value).
+- Retrieved non-defined Tasker variables with `tk.local`/`tk.global` could
+  potentially return as `"undefined"` (string) instead of `undefined` (value).
 
 ### 1.0.0 (2016-07-22)
 
