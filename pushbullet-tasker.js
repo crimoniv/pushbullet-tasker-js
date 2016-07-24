@@ -1,7 +1,7 @@
 /**
  * pushbullet-tasker.js
  *
- * Version: 1.0.3
+ * Version: 1.0.4
  * Date: 2016-07-24
  *
  * © 2016 Cristian Moncho Ivorra
@@ -239,10 +239,11 @@ var PB = (function(tk, window, undefined) {
     /**
      * Push Note.
      *
-     * @param {Object} options - Set/override the Note parameters.
+     * @param {Object|undefined} options - Set/override the Note parameters.
      * @returns Request's response.
      */
     API.pushNote = function (options) {
+        options = options || {};
         var fields = getCommonFields(options);
         return push("note", fields);
     };
@@ -250,10 +251,11 @@ var PB = (function(tk, window, undefined) {
     /**
      * Push Link.
      *
-     * @param {Object} options - Set/override the Link parameters.
+     * @param {Object|undefined} options - Set/override the Link parameters.
      * @returns Request's response.
      */
     API.pushLink = function (options) {
+        options = options || {};
         var fields = getCommonFields(options);
         fields.url = options.url || getEnv("url");
         return push("link", fields);
@@ -262,10 +264,11 @@ var PB = (function(tk, window, undefined) {
     /**
      * Push File.
      *
-     * @param {Object} options - Set/override the File parameters.
+     * @param {Object|undefined} options - Set/override the File parameters.
      * @returns Request's response.
      */
     API.pushFile = function (options) {
+        options = options || {};
         var fields = getCommonFields(options);
         var file_path = options.file_path || getEnv("file_path");
         fields.file_name = options.file_name || getEnv("file_name");

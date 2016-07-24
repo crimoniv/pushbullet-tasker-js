@@ -26,9 +26,9 @@ Send notes, links and/or local files to Pushbullet from Tasker.
     - **External**: Create a new JavaScriptlet action with the following
       parameters:
 
-        - **Code**: `// pushbullet-tasker-js/1.0.3`
+        - **Code**: `// pushbullet-tasker-js/1.0.4`
 
-        - **Libraries**: `https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.3/pushbullet-tasker.min.js`
+        - **Libraries**: `https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.4/pushbullet-tasker.min.js`
 
 ## Parameters
 
@@ -112,7 +112,7 @@ try {
 Push Note (ext. lib.) (1)
 A1: Variable Set [ Name:%pb_token To:<insert-your-token> Do Maths:Off Append:Off ]
 A2: Variable Set [ Name:%pb_type To:note Do Maths:Off Append:Off ]
-A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.3/pushbullet-tasker.min.js Auto Exit:On Timeout (Seconds):45 ]
+A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker-js/1.0.4/pushbullet-tasker.min.js Auto Exit:On Timeout (Seconds):45 ]
 ```
 
 ### Take and push a photo
@@ -130,7 +130,7 @@ A3: JavaScriptlet [ Code:// Libraries:https://cdn.jsdelivr.net/pushbullet-tasker
 
 ## Changelog
 
-### 1.0.3 (2016-07-24)
+### 1.0.4 (2016-07-24)
 
 - Simplified API parameters object building.
 
